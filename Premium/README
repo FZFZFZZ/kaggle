@@ -43,6 +43,7 @@ Key learning points for training:
 1. Use optuna for hyperparameter tuning (define-by-run: dynamically adjust trials during running)
 https://github.com/optuna/optuna-examples/blob/main/pytorch/pytorch_simple.py  <-for pytorch NN
 https://github.com/optuna/optuna-examples/blob/main/basic/quadratic_constraint.py  <-for analytic solution of simple optimisation problems
+check oprunaa.txt to see an example of it with XGBoost
 
 2. XGboost algorithm - a highly optimised gradient boosting (https://www.youtube.com/watch?v=en2bmeB4QUo&ab_channel=ritvikmath) algorithm.
     - The core of gradient boosting: Iteratively, Fi+1(x) = F(x) + step * d(L)/d(F(x)). 

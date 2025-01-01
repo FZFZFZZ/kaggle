@@ -1,0 +1,56 @@
+import xgboost as xgb
+from sklearn.metrics import make_scorer
+import optuna
+from sklearn.ensemble import HistGradientBoostingRegressor as hgbc
+
+def rmsle_on_original_scale(y_true, y_pred):
+    y_true = np.expm1(y_true)
+    y_pred = np.expm1(y_pred)
+    
+    y_pred = np.maximum(y_pred, np.min(y_true))
+    
+    log_true = np.log1p(y_true)
+    log_pred = np.log1p(y_pred)
+    return np.sqrt(np.mean((log_true - log_pred) ** 2))
+
+rmsle_scorer = make_scorer(rmsle_on_original_scale, greater_is_better=False)
+
+def objective_xgb(trial):
+    # params = {
+    #     'n_estimators': trial.suggest_int('n_estimators', 20, 500),
+    #     'max_depth': int(trial.suggest_float('max_depth', 1, 100, log=True)),
+    #     'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3),
+    #     'booster': trial.suggest_categorical('booster', ['gbtree', 'gblinear', 'dart']),
+    #     'gamma': trial.suggest_float('gamma', 0, 2),
+    #     'max_delta_step': trial.suggest_float('max_delta_step', 0, 10),
+    #     'subsample': trial.suggest_float('subsample', 0, 1)
+    # }
+
+    params = {        
+            "n_estimators": trial.suggest_int("n_estimators", 50, 1000, step=100),
+            "max_depth":trial.suggest_int("max_depth", 4, 10),
+            "min_child_weight": trial.suggest_int("min_child_weight", 7, 8),
+            "learning_rate": trial.suggest_float("learning_rate", 1e-4, 1e-1, log=True), 
+    
+            "subsample": trial.suggest_float("subsample", 0.7, 1.0),
+            "colsample_bytree": trial.suggest_float("colsample_bytree", 0.1, 1.0),
+            "reg_alpha": trial.suggest_float("reg_alpha", 1e-2, 10.),
+            "reg_lambda": trial.suggest_float("reg_lambda", 1e-2, 10.),
+            "gamma": trial.suggest_float("gamma", 0.7, 1.0, step=0.1),
+    }    
+    
+    xgb_model = xgb.XGBRegressor(verbosity = 0, device='gpu', objective = 'reg:squarederror', tree_method='gpu_hist', **params)
+
+    return -1*cross_val_score(xgb_model, x_train, y_train, n_jobs=-1, cv=3, scoring=rmsle_scorer).mean()
+
+# study = optuna.create_study(direction='minimize')
+# study.optimize(objective_xgb, n_trials=100)
+# trial = study.best_trial
+
+# print('Accuracy: {}'.format(trial.value))
+
+# print("Best hyperparameters: {}".format(trial.params)) 
+
+params = {'n_estimators': 950, 'max_depth': 9, 'min_child_weight': 8, 'learning_rate': 0.005157092015323985, 'subsample': 0.8137283875432285, 'colsample_bytree': 0.9983658272411838, 'reg_alpha': 6.517426484808757, 'reg_lambda': 0.8771067924995002, 'gamma': 0.7}
+xgb_model = xgb.XGBRegressor(verbosity = 0, device='gpu', objective = 'reg:squarederror', tree_method='gpu_hist', **params)
+xgb_model.fit(x_train, y_train, eval_set=[(x_val, y_val)])
