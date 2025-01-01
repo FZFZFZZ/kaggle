@@ -46,7 +46,7 @@ https://github.com/optuna/optuna-examples/blob/main/basic/quadratic_constraint.p
 check oprunaa.txt to see an example of it with XGBoost
 
 2. XGboost algorithm - a highly optimised gradient boosting (https://www.youtube.com/watch?v=en2bmeB4QUo&ab_channel=ritvikmath) algorithm.
-    - The core of gradient boosting: Iteratively, Fi+1(x) = F(x) + step * d(L)/d(F(x)). 
+    - The core of gradient boosting: Iteratively, Fi+1(x) = F(x) + step * d(L)/d(F(x)). F(x) = Σf(x), while f are weak learners.
     - Advantages of XGboost: implement both L1 and L2 regularisation; auto-handle missing values; built-in cross validation; versatile; optimised tree pruning; parallelisation
     - Very welcomed in kaggle and industrial level
 
