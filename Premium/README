@@ -1,0 +1,54 @@
+It is a failed attempt. The core major issues are:
+1. Using a linear model / Neural Networks for non-linearly related data (evident by low correlation coefficients)
+    - Linear model resulted in gradient explosion
+    - NN reaches the training limit
+2. Not using a notebook, resulting in redundant computations which take a lot of time.
+3. Too much time spent on missing data handling and visualisation (corr and .info() are sufficient). Lack systematic way
+   to deal with missing data, object-type and bool-type data. While missing data may indeed contain extra info, it may not 
+   be worth it to spend too much time guess and code for those relationships
+
+Key learning points for data processing:
+1. pd.set_option('display.max_columns', None) # To break the display limit on column numbers
+2. Always process X_train and X_test (provided for submission) together
+3. For standardizing numerical values:
+    num_cols = X_train.select_dtypes(exclude=['object', 'datetime', 'bool']).columns.tolist()
+    num_cols.remove('Target Type')
+    scaler = StandardScaler()
+    X_train[num_cols] = scaler.fit_transform(X_train[num_cols])
+    X_test[num_cols] = scaler.transform(X_test[num_cols])
+4. Manually encode ordinal data, do not hot encode:
+    def encode_ordinal(df):
+        exerc = {'Rarely':0, 'Daily':1, 'Weekly':2, 'Monthly': 3}
+        feedback = {'Poor':0, 'Average':1, 'Good':2, "Unknown": 0}
+        df['Exercise Frequency'] = df['Exercise Frequency'].map(exerc)
+        df['Customer Feedback'] = df['Customer Feedback'].map(feedback)
+        return df
+5. Manually encode binary data, do not hot encode:
+    def encode_binary(df):  
+        df['Gender'] = df['Gender'].map({'Male':0, 'Female':1})
+        return df
+6. Hot encode the rest:
+    def one_hot_dummies(df, categorical):
+        oh = pd.get_dummies(df[categorical])
+        df = df.drop(categorical, axis=1)
+        return pd.concat([df, oh], axis=1)
+7. Use np.log1p(df) to avoid '0' issue
+8. For adding new features, consider:
+    - Per capita data
+    - feature A * feature B, if A and B are related. No need more accurate relationship
+9. For NAN values, create a new feature "is_na_feature"
+
+
+Key learning points for training:
+1. Use optuna for hyperparameter tuning (define-by-run: dynamically adjust trials during running)
+https://github.com/optuna/optuna-examples/blob/main/pytorch/pytorch_simple.py  <-for pytorch NN
+https://github.com/optuna/optuna-examples/blob/main/basic/quadratic_constraint.py  <-for analytic solution of simple optimisation problems
+
+2. XGboost algorithm - a highly optimised gradient boosting (https://www.youtube.com/watch?v=en2bmeB4QUo&ab_channel=ritvikmath) algorithm.
+    - The core of gradient boosting: Iteratively, Fi+1(x) = F(x) + step * d(L)/d(F(x)). 
+    - Advantages of XGboost: implement both L1 and L2 regularisation; auto-handle missing values; built-in cross validation; versatile; optimised tree pruning; parallelisation
+    - Very welcomed in kaggle and industrial level
+
+3. LightGBM - a simpler and memory-light histogram-based gradient boosting algorithm, compared to XGBoost. It discretizes       continuous features into a fixed number of bins. XGBoost also does binning, however internally and dynamically within the algorithm.
+
+4. Catboost (categorical boost) - A state-of-the-art gradient boosting based algorithm. Key highlights include balanced tree built (faster prediction, also serve as regularisation to prevent overfitting) and ordered boosting (a permutation-driven approach to train a model on a subset of data while calculating residuals on another subset, thus preventing target leakage and overfitting). It supports numeric (find the threshold by info gain, like other GBMs), categorical (auto-one-hot-encode binary features) and text features. (https://neptune.ai/blog/when-to-choose-catboost-over-xgboost-or-lightgbm)
