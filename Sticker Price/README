@@ -1,3 +1,5 @@
+Competition page: https://www.kaggle.com/competitions/playground-series-s5e1/data
+
 It is a rather successful attempt. Highlights include:
 1. Standardised encoding process (not one-hot-encode everything)
 2. Simplified data description and visualisation process (only visualise those worthy to visualise)
