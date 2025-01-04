@@ -1,0 +1,21 @@
+It is a rather successful attempt. Highlights include:
+1. Standardised encoding process (not one-hot-encode everything)
+2. Simplified data description and visualisation process (only visualise those worthy to visualise)
+3. Used a notebook, avoided a lot of redundant computations
+4. Not go directly to a linear regression model or NN. Good trial on XGB and CATB, with optuna.
+5. Good trial on feature engineering for time-series data (sinusoidal sell pattern, special dates)
+6. Processed X_train and X_test (provided for submission) together
+
+
+Key learning points for data processing:
+1. Experts in the target field proposes good feature engineering. Good feature engineering brings much more significant improvements than hyper-parameter tuning. From public codes, there are some using auto-feature engineering and achieved very high rank. It is worth exploring. https://www.kaggle.com/code/abdmental01/lgbm-forecasting-sticker-sales
+2. For time-series data in predicting sells, apart from splitting yr, month and day, it is worth spending time investigating the general sinusoidal sell pattern, as well as special holidays or events that promote sells. Then, produce new features if necessary.
+3. Mere scalar multiplication (apart from 0) on all features does no affect on accuracy at all for dt based methods.
+4. Sqrt() is another method of transforming left-skewed data. Log1p is used when skewness is very big, while sqrt is used when skewness is not very big.
+5. For country feature, consider the data for GDP and per-capita GDP.
+
+Key learning points for training:
+1. LGBM does not always perform worse than XBM and CATB. In my attempt, CATB performs poorly compared to XBM. And majority of highest-ranked submissions used LGBM.
+2. Hyper-parameter tuning has very low return of investment (roi). If a good leap of performance is required, do not go for hyper-parameter tuning.
+3. For default epoch number, increase it to 1000+, with early-stop = 10. (However for some reason it does not work for XBM)
+4. There are some open-source libraries for common regression tasks (with common DT based MLAs and auto feature-engineering): https://github.com/muhammadabdullah0303/AbdML. The performance is good. Worth trying.
